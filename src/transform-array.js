@@ -1,38 +1,34 @@
 const CustomError = require("../extensions/custom-error");
 
 module.exports = function transform(arr) {
+    const seq = [`--discard-next`,`--double-prev`, `--double-next`,`--discard-prev`]
 
-  if (Array.isArray(arr)) {
-      let res = [];
-      for (let i = 0; i < arr.length; i++) {
-          switch (arr[i]) {
-              case '--discard-next': {
-                  i++;
-                  break;
-              }
-              case '--discard-prev': {
-                  res.pop();
-                  break;
-              }
-
-              case '--double-next': {
-                  if (i + 1 < arr.length)
-                      res.push(arr[i + 1]);
-                  break;
-              }
-
-              case '--double-prev': {
-                  if (i > 0)
-                      res.push(arr[i - 1]);
-                  break;
-              }
-
-              default: {
-                  res.push(arr[i]);
-              }
-          }
+    if (arr.length == 0){
+        return []
+    }
+  
+    return arr.reduce((prev, cur, indx) => {
+      if (seq.includes(cur)) {
+        return prev;
       }
-      return res;
-  } 
-  else throw Error;
-};
+  
+      if (arr[indx - 1] == `--discard-next`) {
+        return prev;
+      }
+  
+      if (arr[indx - 1] == `--double-next`) {
+        prev.push(cur, cur);
+      } else {
+        prev.push(cur);
+      }
+  
+      if (arr[indx + 1] == `--discard-prev`) {
+        prev.splice(prev.length - 1, 1)
+      }
+  
+      if (arr[indx + 1] == `--double-prev`) {
+        prev.push(cur)
+      }
+      return prev;
+    },[]);
+  };
